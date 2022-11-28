@@ -1,40 +1,37 @@
 ---
-- name: "3.3.1 | PATCH | Ensure source routed packets are not accepted"
-  block:
-      - name: "3.3.1 | PATCH | Ensure source routed packets are not accepted | IPv4"
-        sysctl:
-            name: '{{ item.name }}'
-            value: '{{ item.value }}'
-            sysctl_set: true
-            state: present
-            reload: true
-            ignoreerrors: true
-        notify: sysctl flush ipv4 route table
-        with_items:
-            - { name: net.ipv4.conf.all.accept_source_route, value: 0 }
-            - { name: net.ipv4.conf.default.accept_source_route, value: 0 }
-
-      - name: "3.3.1 | PATCH | Ensure source routed packets are not accepted | IPv6"
-        sysctl:
-            name: '{{ item.name }}'
-            value: '{{ item.value }}'
-            sysctl_set: true
-            state: present
-            reload: true
-            ignoreerrors: true
-        notify: sysctl flush ipv6 route table
-        with_items:
-            - { name: net.ipv6.conf.all.accept_source_route, value: 0 }
-            - { name: net.ipv6.conf.default.accept_source_route, value: 0 }
-  when:
-      - amazon2cis_rule_3_3_1
-      - amazon2cis_ipv6_required
+- name: 3.2.1 - Ensure source routed packets are not accepted
+  sysctl:
+    ignoreerrors: yes
+    name: "{{ item }}"
+    value: "0"
+    state: present
+  with_items:
+    - "net.ipv4.conf.all.accept_source_route"
+    - "net.ipv4.conf.default.accept_source_route"
+    - "net.ipv6.conf.all.accept_source_route"
+    - "net.ipv6.conf.default.accept_source_route"
   tags:
-      - level1
-      - automated
-      - patch
-      - rule_3.3.1
-      - sysctl
+    - level-1
+    - section-3
+    - "3.2.1"
+    - scored
+  ignore_errors: yes
+
+- name: 3.2.1 - Ensure source routed packets are not accepted in active kernel parameters
+  command: "{{ item }}"
+  with_items:
+    - "sysctl -w net.ipv4.conf.all.accept_source_route=0"
+    - "sysctl -w net.ipv4.conf.default.accept_source_route=0"
+    - "sysctl -w net.ipv6.conf.all.accept_source_route=0"
+    - "sysctl -w net.ipv6.conf.default.accept_source_route=0"
+    - "sysctl -w net.ipv4.route.flush=1"
+    - "sysctl -w net.ipv6.route.flush=1"
+  tags:
+    - level-1
+    - section-3
+    - "3.2.1"
+    - scored
+  ignore_errors: yes
 
 - name: "3.3.2 | PATCH | Ensure ICMP redirects are not accepted "
   block:

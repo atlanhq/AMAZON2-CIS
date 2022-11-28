@@ -232,13 +232,6 @@
         loop_control:
             label: "{{ item.mount }}"
         when: item['device'].startswith('/dev') and not 'bind' in item['options']
-
-      - name: "6.1.12 | AUDIT | Ensure no ungrouped files or directories exist | Displaying all ungrouped files or directories"
-        debug:
-            msg: "Warning - Manual intervention is required -- missing group on items in {{ item }}!"
-        with_items:
-            - "{{ amazon2_6_1_12_audit.results | map(attribute='stdout_lines') }}"
-        when: item | length > 0
   when:
       - amazon2cis_rule_6_1_12
   tags:

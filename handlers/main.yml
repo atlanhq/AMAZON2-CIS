@@ -67,7 +67,19 @@
       name: rsyslog
       state: restarted
 
+- name: Reconfigure GRUB
+  command: grub2-mkconfig -o /boot/grub2/grub.cfg
+
+- name: Restart sshd
+  service:
+    name: sshd
+    state: restarted
+
 - name: restart sshd
   service:
-      name: sshd
-      state: restarted
+    name: sshd
+    state: restarted
+
+
+- name: Generate auditd rules
+  command: /usr/sbin/augenrules

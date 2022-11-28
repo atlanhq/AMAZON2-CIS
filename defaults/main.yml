@@ -25,6 +25,9 @@ amazon2cis_tmp_svc: true
 
 ### Goss Audit run settings
 # Goss audit configuration settings at bottom of file
+cis_modprobe_conf_filename: "/etc/modprobe.d/cis.conf"
+cis_grub_bootloader_filename: "/boot/grub2/grub.cfg"
+cis_grub_configuration_filename: "/etc/default/grub"
 
 setup_audit: false
 # How to retrive goss
@@ -528,3 +531,42 @@ audit_results: |
       The pre remediation results are: {{ pre_audit_summary }}.
       The post remediation results are: {{ post_audit_summary }}.
       Full breakdown can be found in {{ audit_out_dir }}
+
+
+cis_umask_default: "027"
+cis_umask_shell_files:
+- /etc/bashrc
+- /etc/profile
+cis_umask_shell_additional_files_directory:
+- /etc/profile.d
+
+
+cis_pass_max_days: 90
+cis_pass_min_days: 7
+cis_pass_warn_age: 7
+cis_pass_inactive_lock: 30
+
+cis_sysconfig_init_filename: "/etc/sysconfig/init"
+cis_security_limits_filename: "/etc/security/limits.conf"
+cis_audit_auditd_filename:  "/etc/audit/auditd.conf"
+cis_audit_rules_filename: "/etc/audit/rules.d/audit.rules"
+cis_sshd_config_filename: "/etc/ssh/sshd_config"
+
+cis_user_shell_timeout: 600
+
+cis_wheel_group_members: "root"
+
+failed_password_attempt_lockout_time: 900
+
+cis_sshd_max_auth_tries: 4
+cis_sshd_ciphers: "aes256-ctr,aes192-ctr,aes128-ctr"
+cis_sshd_macs: "hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com"
+cis_sshd_kex_algorithms: "curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256"
+cis_sshd_client_alive_interval: 300
+cis_sshd_client_alive_count_max: 0
+cis_sshd_login_grace_time: 60
+cis_sshd_allow_users: "ec2-user" # A space-delimited list of users to allow ssh access to.
+cis_sshd_allow_groups: "ec2-user" # A space-delimited list of groups to allow ssh access to
+cis_sshd_deny_users: "root" # A space-delimited list of users to deny ssh access for
+cis_sshd_deny_groups: "root" # A space-delimited list of groups to deny ssh access for
+cis_sshd_banner: "/etc/issue.net"

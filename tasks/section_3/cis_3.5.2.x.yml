@@ -160,49 +160,39 @@
       - firewall
       - nftables
 
-- name: "3.5.2.7 | PATCH | Ensure loopback traffic is configured"
-  block:
-      - name: "3.5.2.7 | AUDIT | Ensure loopback traffic is configured | Gather iif lo accept existence"
-        shell: nft list ruleset | awk '/hook input/,/}/' | grep 'iif "lo" accept'
-        changed_when: false
-        failed_when: false
-        register: amazon2cis_3_5_2_7_iiflo
-
-      - name: "3.5.2.7 | AUDIT | Ensure loopback traffic is configured | Gather ip saddr existence"
-        shell: nft list ruleset | awk '/hook input/,/}/' | grep 'ip saddr'
-        changed_when: false
-        failed_when: false
-        register: amazon2cis_3_5_2_7_ipsaddr
-
-      - name: "3.5.2.7 | AUDIT | Ensure loopback traffic is configured | Gather ip6 saddr existence"
-        shell: nft list ruleset | awk '/hook input/,/}/' | grep 'ip6 saddr'
-        changed_when: false
-        failed_when: false
-        register: amazon2cis_3_5_2_7_ip6saddr
-
-      - name: "3.5.2.7 | PATCH | Ensure loopback traffic is configured | Set iif lo accept rule"
-        command: nft add rule inet "{{ amazon2cis_nft_tables_tableName }}" input iif lo accept
-        when:
-            - '"iif \"lo\" accept" not in amazon2cis_3_5_2_7_iiflo.stdout'
-
-      - name: "3.5.2.7 | PATCH | Ensure loopback traffic is configured | Set ip sddr rule"
-        command: nft add rule inet "{{ amazon2cis_nft_tables_tableName }}" input ip saddr 127.0.0.0/8 counter drop
-        when:
-            - '"ip saddr 127.0.0.0/8 counter packets 0 bytes 0 drop" not in amazon2cis_3_5_2_7_ipsaddr.stdout'
-
-      - name: "3.5.2.7 | PATCH | Ensure loopback traffic is configured | Set ip6 saddr rule"
-        command: nft add rule inet "{{ amazon2cis_nft_tables_tableName }}" input ip6 saddr ::1 counter drop
-        when:
-            - '"ip6 saddr ::1 counter packets 0 bytes 0 drop" not in amazon2cis_3_5_2_7_ip6saddr.stdout'
-  when:
-      - amazon2cis_rule_3.5.2.7
+- name: 3.5.1.2 - Ensure loopback traffic is configured(-i lo)
+  iptables:
+    chain: INPUT
+    in_interface: "lo"
+    jump: ACCEPT
   tags:
-      - level1
-      - automated
-      - patch
-      - rule_3.5.2.7
-      - firewall
-      - nftables
+    - level-1
+    - section-3
+    - "3.5.1.2"
+    - scored
+
+- name: 3.5.1.2 - Ensure loopback traffic is configured(-o lo)
+  iptables:
+    chain: OUTPUT
+    out_interface: "lo"
+    jump: ACCEPT
+  tags:
+    - level-1
+    - section-3
+    - "3.5.1.2"
+    - scored
+
+- name: 3.5.1.2 - Ensure loopback traffic is configured(-i 127.0.0.1/8)
+  iptables:
+    chain: INPUT
+    source: 127.0.0.0/8
+    jump: DROP
+  tags:
+    - level-1
+    - section-3
+    - "3.5.1.2"
+    - scored
+
 
 - name: "3.5.2.8 | PATCH | Ensure outbound and established connections are configured"
   block:
@@ -257,60 +247,19 @@
       - firewall
       - nftables
 
-- name: "3.5.2.9 | PATCH | Ensure default deny firewall policy"
-  block:
-      - name: "AUTOMATED | 3.5.2.9 | AUDIT | Ensure default deny firewall policy | Check for hook input deny policy"
-        shell: nft list table inet "{{ amazon2cis_nft_tables_tableName }}" | grep 'hook input'
-        failed_when: false
-        changed_when: false
-        register: amazon2cis_3_5_2_9_inputpolicy
-
-      - name: "3.5.2.9 | AUDIT | Ensure default deny firewall policy | Check for hook forward deny policy"
-        shell: nft list table inet "{{ amazon2cis_nft_tables_tableName }}" | grep 'hook forward'
-        failed_when: false
-        changed_when: false
-        register: amazon2cis_3_5_2_9_forwardpolicy
-
-      - name: "3.5.2.9 | AUDIT | Ensure default deny firewall policy | Check for hook output deny policy"
-        shell: nft list table inet "{{ amazon2cis_nft_tables_tableName }}" | grep 'hook output'
-        failed_when: false
-        changed_when: false
-        register: amazon2cis_3_5_2_9_outputpolicy
-
-      - name: "3.5.2.9 | AUDIT | Ensure default deny firewall policy | Check for SSH allow"
-        shell: nft list table inet "{{ amazon2cis_nft_tables_tableName }}" | grep 'ssh'
-        failed_when: false
-        changed_when: false
-        register: amazon2cis_3_5_2_9_sshallowcheck
-
-      - name: "3.5.2.9 | PATCH | Ensure default deny firewall policy | Enable SSH traffic"
-        command: nft add rule inet "{{ amazon2cis_nft_tables_tableName }}" input tcp dport ssh accept
-        when:
-            - '"tcp dport ssh accept" not in amazon2cis_3_5_2_9_sshallowcheck.stdout'
-
-      - name: "3.5.2.9 | PATCH | Ensure default deny firewall policy | Set hook input deny policy"
-        command: nft chain inet "{{ amazon2cis_nft_tables_tableName }}" input { policy drop \; }
-        when:
-            - '"type filter hook input priority 0; policy drop;" not in amazon2cis_3_5_2_9_inputpolicy.stdout'
-
-      - name: "3.5.2.9 | PATCH | Ensure default deny firewall policy | Create hook forward deny policy"
-        command: nft chain inet "{{ amazon2cis_nft_tables_tableName }}" forward { policy drop \; }
-        when:
-            - '"type filter hook forward priority 0; policy drop;" not in amazon2cis_3_5_2_9_forwardpolicy.stdout'
-
-      - name: "3.5.2.9 | PATCH | Ensure default deny firewall policy | Create hook output deny policy"
-        command: nft chain inet "{{ amazon2cis_nft_tables_tableName }}" output { policy drop \; }
-        when:
-            - '"type filter hook output priority 0; policy drop;" not in amazon2cis_3_5_2_9_outputpolicy.stdout'
-  when:
-      - amazon2cis_rule_3_5_2_9
+- name: 3.5.1.1 - Ensure default deny firewall policy
+  iptables:
+    chain: "{{item}}"
+    policy: DROP
+  with_items:
+    - INPUT
+    - FORWARD
+    - OUTPUT
   tags:
-      - level1
-      - manual
-      - patch
-      - rule_3.5.2.9
-      - firewall
-      - nftables
+    - level-1
+    - section-3
+    - "3.5.1.1"
+    - scored
 
 - name: "3.5.2.10 | PATCH | Ensure nftables service is enabled"
   systemd:
@@ -341,3 +290,18 @@
       - rule_3.5.2.11
       - firewall
       - nftables
+
+
+- name: 3.5.1.1 - Ensure default deny firewall policy
+  iptables:
+    chain: "{{item}}"
+    policy: DROP
+  with_items:
+    - INPUT
+    - FORWARD
+    - OUTPUT
+  tags:
+    - level-1
+    - section-3
+    - "3.5.1.1"
+    - scored
