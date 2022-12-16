@@ -10,8 +10,7 @@
 
 - name: remount dev_shm
   command: mount -o remount /dev/shm
-  args:
-      warn: false
+
 
 - name: systemd daemon reload
   systemd:
@@ -52,8 +51,6 @@
   command: /sbin/service auditd restart
   check_mode: false
   failed_when: false
-  args:
-      warn: false
   when:
       - not amazon2cis_skip_for_travis
   tags:
