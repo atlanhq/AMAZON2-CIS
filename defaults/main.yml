@@ -1,4 +1,7 @@
 ---
+# mitogen config
+strategy_plugins: mitogen-0.3.0-rc.0/ansible_mitogen/plugins/strategy
+strategy: mitogen_linear
 
 # Disable/Enable whole sections (Default is for all)
 amazon2cis_section1: true
